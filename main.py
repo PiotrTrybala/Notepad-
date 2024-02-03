@@ -14,6 +14,9 @@ class NotepadPPP(QMainWindow):
         self.fontSizeBox = QSpinBox()
 
         font = QFont('Times', 24)
+
+        self.path = ""
+
         self.editor.setFont(font)
         self.editor.setFontPointSize(24.0)
 
@@ -26,6 +29,14 @@ class NotepadPPP(QMainWindow):
 
     def createToolBar(self):
         toolbar = QToolBar()
+
+        saveBtn = QAction(QIcon('./icons/save.svg'), 'Save', self)
+        saveBtn.triggered.connect(self.saveFile)
+        toolbar.addAction(saveBtn)
+
+        openBtn = QAction(QIcon('./icons/file_open.svg'), 'Save', self)
+        openBtn.triggered.connect(self.openFile)
+        toolbar.addAction(openBtn)
 
         undoBtn = QAction(QIcon('./icons/undo.svg'), 'Undo', self)
         undoBtn.triggered.connect(self.editor.undo)
@@ -64,15 +75,15 @@ class NotepadPPP(QMainWindow):
         toolbar.addAction(justify)
 
         boldBtn = QAction(QIcon('./icons/bold.svg'), 'Bold', self)
-        boldBtn.triggered.connect(self.editor.boldText)
+        boldBtn.triggered.connect(self.boldText)
         toolbar.addAction(boldBtn)
 
         italicBtn = QAction(QIcon('./icons/italic.svg'), 'Italic', self)
-        italicBtn.triggered.connect(self.editor.italicText)
+        italicBtn.triggered.connect(self.italicText)
         toolbar.addAction(italicBtn)
 
-        underlineBtn = QAction(QIcon('./icons/paste.svg'), 'Underline', self)
-        underlineBtn.triggered.connect(self.editor.underlineText)
+        underlineBtn = QAction(QIcon('./icons/underlined.svg'), 'Underline', self)
+        underlineBtn.triggered.connect(self.underlineText)
         toolbar.addAction(underlineBtn)
 
         self.fontBox = QComboBox(self)
@@ -80,12 +91,50 @@ class NotepadPPP(QMainWindow):
         self.fontBox.activated.connect(self.setFont)
         toolbar.addWidget(self.fontBox)
 
-        self.fontSizeBox.setValue(24.0)
+        self.fontSizeBox.setValue(24)
         self.fontSizeBox.valueChanged.connect(self.setFontSize)
 
         toolbar.addWidget(self.fontSizeBox)
 
         self.addToolBar(toolbar)
+
+    def saveFile(self):
+        print(self.path)
+
+        if self.path == "":
+            self.fileSaveAs()
+        else:
+            self.writeFile()
+
+    def writeFile(self):
+        text = self.editor.toPlainText()
+        try:
+            with open(self.path, 'w') as f:
+                f.write(text)
+                self.updateTitle()
+        except Exception as e:
+            print(e)
+
+    def updateTitle(self):
+
+        if self.path != "":
+            self.setWindowTitle(f"Notepad+++ - {self.path}")
+
+    def fileSaveAs(self):
+
+        self.path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save file",
+            "",
+            "Text Documents (*.text, *.txt); All files (*.*)"
+        )
+
+        print(self.path)
+
+        self.writeFile()
+
+    def openFile(self):
+        pass
 
     def setFontSize(self):
         value = self.fontSizeBox.value()
@@ -93,7 +142,7 @@ class NotepadPPP(QMainWindow):
 
     def setFont(self):
         value = self.fontBox.currentText()
-        self.editor.setCurrentFont(QFont(value, self.editor.fontPointSize()))
+        self.editor.setCurrentFont(QFont(value, int(self.editor.fontPointSize())))
 
     def boldText(self):
         if self.editor.fontWeight() != QFont.Weight.Bold:
@@ -107,7 +156,7 @@ class NotepadPPP(QMainWindow):
 
     def underlineText(self):
         state = self.editor.fontUnderline()
-        self.editor.setFont(not(state))
+        self.editor.setFontUnderline(not(state))
 
 app = QApplication(sys.argv)
 window = NotepadPPP()
