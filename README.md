@@ -1,3 +1,7 @@
+# Notatnik na Pythona
+
+Jak ktoś chce, to niech pobierze
+
 # TODO
 
 - Ctrl+S save
